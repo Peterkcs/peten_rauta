@@ -1,0 +1,31 @@
+id,name,category,status,delivery_working_days,note,as_of
+P001,Claw hammer 450 g,Hand tools,SHELF,,,2026-11-10
+P002,"Screwdriver set, 12 pcs",Hand tools,SHELF,,,2026-11-10
+P003,Cordless drill 18 V with 2 batteries,Power tools,SHELF,,,2026-11-10
+P004,Spare battery 18 V 4 Ah,Power tools,WAREHOUSE,,,2026-11-10
+P005,Circular saw 1400 W,Power tools,WAREHOUSE,,,2026-11-10
+P006,Spirit level 60 cm,Hand tools,SHELF,,,2026-11-10
+P007,"Wood screws 4 x 40 mm, 200 pcs",Fasteners,SHELF,,,2026-11-10
+P008,"Wall plugs 8 mm, 100 pcs",Fasteners,SHELF,,,2026-11-10
+P009,"Masking tape, blue, 50 mm x 50 m",Paint,SHELF,,,2026-11-10
+P010,"Interior wall paint, white, 9 L",Paint,SHELF,,,2026-11-10
+P011,"Wood stain, pine, 1 L",Paint,WAREHOUSE,,,2026-11-10
+P012,"Paint roller set, 5 pcs",Paint,SHELF,,,2026-11-10
+P013,Paintbrush 50 mm,Paint,SHELF,,,2026-11-10
+P014,Garden hose 25 m,Garden,SHELF,,,2026-11-10
+P015,Garden spade,Garden,SHELF,,,2026-11-10
+P016,Lawn rake,Garden,WAREHOUSE,,,2026-11-10
+P017,Garden shed kit 3 x 2 m,Garden,ORDER,10-14,,2026-11-10
+P018,"Extension cord 10 m, outdoor, IP44",Electrical,WAREHOUSE,,,2026-11-10
+P019,"Extension cord 3 m, indoor",Electrical,SHELF,,,2026-11-10
+P020,"LED bulb E27 10 W, 4 pcs",Electrical,SHELF,,,2026-11-10
+P021,Space heater 2 kW,Heating,SHELF,,,2026-11-10
+P022,Chimney pipe set 150 mm for wood stove,Heating,ORDER,5-7,,2026-11-10
+P023,Wood-burning stove 6 kW,Heating,ORDER,8-12,,2026-11-10
+P024,Kitchen mixer tap,Plumbing,WAREHOUSE,,,2026-11-10
+P025,"Silicone sealant, white, 300 ml",Plumbing,SHELF,,,2026-11-10
+P026,"Work gloves, size 10",Safety,SHELF,,,2026-11-10
+P027,Safety goggles,Safety,SHELF,,,2026-11-10
+P028,"Aluminium step ladder, 3 steps",Ladders,WAREHOUSE,,,2026-11-10
+P029,Snow shovel,Winter,SHELF,,,2026-11-10
+P030,"Ice melt salt, 10 kg",Winter,SOLD_OUT,,"Restock expected, date not confirmed",2026-11-10

@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Peten rauta ja romu: email reply assistant (course prototype)</title>
+  <meta name="description" content="Prototype and test set for an email triage and reply-drafting assistant for a fictional hardware store. University course project.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%230B65AF%27/%3E%3Crect y=%2722%27 width=%2732%27 height=%276%27 fill=%27%23FBEB23%27/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="chat.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="top">
+    <div class="wrap">
+      <p class="eyebrow">University of Oulu course project · synthetic data only</p>
+      <h1>Peten rauta ja romu</h1>
+      <p class="lead">Email triage and reply-drafting assistant for a fictional hardware store. The assistant answers only three routine questions and sends everything else to a named owner. A staff member sends every reply.</p>
+    </div>
+    <div class="stripe" aria-hidden="true"></div>
+  </header>
+
+  <nav class="tabs" aria-label="Sections">
+    <div class="wrap">
+      <a href="#overview">Overview</a>
+      <a href="#chat" class="try">Kokeile chättiä</a>
+      <a href="#tests">Tests</a>
+      <a href="#prompt">Prompt</a>
+      <a href="#documents">Documents</a>
+      <a href="#results">Results</a>
+      <a href="#about">About</a>
+    </div>
+  </nav>
+
+  <main id="main" class="wrap">
+
+    <div id="fileWarning" class="notice warn" hidden>
+      This page reads its data with <code>fetch</code>, which browsers block on <code>file://</code>. Run <code>python -m http.server</code> in the repo folder and open <code>http://localhost:8000</code>, or use GitHub Pages.
+    </div>
+
+    <section id="overview">
+      <h2>Overview</h2>
+      <div class="grid3">
+        <article class="card">
+          <h3>Routine, drafted</h3>
+          <ul>
+            <li>Opening hours, including holidays</li>
+            <li>Stock status of a named product</li>
+            <li>Delivery time of an order-only item</li>
+          </ul>
+        </article>
+        <article class="card">
+          <h3>Not routine, escalated</h3>
+          <ul>
+            <li>Returns, complaints, warranty</li>
+            <li>Prices, discounts, invoices</li>
+            <li>Product advice and technical questions</li>
+            <li>Any email that mixes routine and non-routine</li>
+          </ul>
+        </article>
+        <article class="card">
+          <h3>Human in the loop</h3>
+          <ul>
+            <li>Output has a fixed block with a VERIFY line</li>
+            <li>Email text is treated as data, not instructions</li>
+            <li>Staff checks and sends every reply</li>
+          </ul>
+        </article>
+      </div>
+
+      <h3>How it works</h3>
+      <ol class="steps">
+        <li><strong>Input.</strong> Staff pastes a customer email into the tool.</li>
+        <li><strong>Triage.</strong> The assistant sets CATEGORY to ROUTINE or NOT_ROUTINE and gives a short REASON.</li>
+        <li><strong>Draft or route.</strong> Routine: a draft built only from the documents. Not routine: ESCALATE_TO names an owner and no draft is written.</li>
+        <li><strong>Check.</strong> VERIFY lists what staff must confirm, for example the stock status on the shelf.</li>
+      </ol>
+
+      <h3>Output block</h3>
+      <pre class="code">CATEGORY: ROUTINE | NOT_ROUTINE
+REASON: one sentence
+ESCALATE_TO: none | customer_service_lead | store_manager | product_advisor | finance
+DRAFT: reply in the customer's language, or none
+SOURCES: document and row used
+VERIFY: what staff must confirm before sending</pre>
+
+      <h3>Evaluation plan</h3>
+      <p>20 invented test emails with the expected result written before any run. Automatic checks cover format, category, owner and simple rules on the draft. A person judges the facts in each draft. The costliest error is a missed escalation, so escalation recall is reported first.</p>
+      <div class="stats" id="testStats" aria-live="polite"></div>
+    </section>
+
+    <section id="chat">
+      <h2>Kokeile chättiä</h2>
+      <p class="intro">Kirjoita viesti niin kuin asiakas kirjoittaisi sähköpostiin. Henkilökunnan näkymässä näet, miten avustaja luokittelee viestin ja mitä henkilökunnan pitäisi tarkistaa ennen lähetystä.</p>
+
+      <div class="chat-layout">
+        <div class="chat" role="region" aria-label="Asiakkaan chat">
+          <div class="chat-head">
+            <div class="avatar" aria-hidden="true">P</div>
+            <div class="who"><b>Peten rauta ja romu</b><span>Aukiolo, hyllytilanne ja toimitusajat</span></div>
+            <button type="button" class="chat-reset" id="chatReset">Aloita alusta</button>
+          </div>
+          <div class="chat-log" id="chatLog" role="log" aria-live="polite" aria-label="Keskustelu"></div>
+          <div class="chat-chips" id="chatChips" aria-label="Esimerkkikysymykset"></div>
+          <form class="chat-form" id="chatForm">
+            <label class="sr" for="chatInput">Viestisi</label>
+            <textarea id="chatInput" rows="1" placeholder="Kirjoita viesti…" maxlength="2000"></textarea>
+            <button type="submit" class="send">Lähetä</button>
+          </form>
+        </div>
+
+        <details class="staff" open>
+          <summary>Henkilökunnan näkymä <span class="mode" id="modeTag"></span></summary>
+          <div id="staffBody" aria-live="polite"></div>
+        </details>
+      </div>
+
+      <p class="chat-note"><strong>Tämä on demo.</strong> Oletuksena vastaukset tulevat sääntöpohjaisesta moottorista (<code>demo-engine.js</code>), jossa ei ole kielimallia. Se noudattaa samoja sääntöjä kuin järjestelmäkehote, mutta se ei ole se avustaja, jota ryhmä testaa. Älä kirjaa demon vastauksia <code>results/</code>-kansioon. Oikeassa käytössä henkilökunta tarkistaa jokaisen vastauksen ennen lähetystä, tässä se näkyy asiakkaalle heti. Oman testiympäristön voi kytkeä tähän tiedostossa <code>config.js</code>.</p>
+    </section>
+
+    <section id="tests">
+      <h2>Test emails</h2>
+      <p>Expected results were decided before any run. Copy an email into the assistant and compare.</p>
+      <div class="filters" role="group" aria-label="Filter tests">
+        <button type="button" class="chip on" data-filter="all">All</button>
+        <button type="button" class="chip" data-filter="ROUTINE">Routine</button>
+        <button type="button" class="chip" data-filter="NOT_ROUTINE">Not routine</button>
+        <button type="button" class="chip" data-filter="difficult">Difficult</button>
+        <button type="button" class="chip" data-filter="fi">Finnish</button>
+        <button type="button" class="chip" data-filter="en">English</button>
+      </div>
+      <div id="testList" class="list" aria-live="polite">Loading…</div>
+    </section>
+
+    <section id="prompt">
+      <h2>System prompt v1</h2>
+      <p>Attach the three documents (opening hours, stock list, delivery rules) and the escalation rules to the same assistant. Replace <code>[NAME]</code> and <code>[AGENT]</code> in the drafts before sending.</p>
+      <div class="toolbar"><button type="button" class="btn" id="copyPrompt">Copy prompt</button><span class="hint" id="copyPromptHint" role="status"></span></div>
+      <pre class="code tall" id="promptText">Loading…</pre>
+    </section>
+
+    <section id="documents">
+      <h2>Documents the assistant may use</h2>
+      <p>These files are the only source of facts. Stock data is invented and dated 2026-11-10.</p>
+      <h3>Opening hours</h3>
+      <div class="docbox" id="docHours">Loading…</div>
+      <h3>Stock list</h3>
+      <div class="tablewrap"><table id="stockTable"><caption class="sr">Stock list</caption></table></div>
+      <h3>Delivery and returns</h3>
+      <div class="docbox" id="docDelivery">Loading…</div>
+      <h3>Escalation rules</h3>
+      <div class="docbox" id="docEscalation">Loading…</div>
+    </section>
+
+    <section id="results">
+      <h2>Results</h2>
+      <p>Only runs that the group has actually made appear here. A run is listed when it is scored with <code>tools/score.py</code>. Automatic checks do not judge whether the facts in a draft are right.</p>
+      <div id="resultsBox" aria-live="polite">Loading…</div>
+    </section>
+
+    <section id="about">
+      <h2>About</h2>
+      <div class="notice">
+        <p><strong>Fictional store, no affiliation.</strong> "Peten rauta ja romu" is invented for a university course. It is not connected to K-Rauta, Kesko or any other company. This site uses no logos, names, images or texts from any retailer.</p>
+        <p><strong>Colours.</strong> The blue, yellow and near-black are approximate values taken from a third-party colour listing, not from official brand guidelines. They are used here as a colour scheme only.</p>
+        <p><strong>Chat demo.</strong> The "Kokeile chättiä" tab runs a rule-based engine in the browser by default. It is not an AI model and its outputs are not results of the assistant under test. With <code>apiUrl</code> set in <code>config.js</code> the tab calls your own test endpoint instead.</p>
+        <p><strong>Data.</strong> All emails, names, stock rows and hours are synthetic. Do not paste real customer data into this prototype.</p>
+        <p><strong>AI use.</strong> Parts of this repository were drafted with an AI assistant and reviewed by the group. Results are never generated by AI and presented as measured.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="foot">
+    <div class="wrap"><p>Course prototype · synthetic data · not a real store</p></div>
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="demo-engine.js"></script>
+  <script src="app.js"></script>
+  <script src="chat.js"></script>
+</body>
+</html>
